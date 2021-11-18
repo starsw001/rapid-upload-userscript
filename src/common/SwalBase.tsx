@@ -1,7 +1,7 @@
 /*
  * @Author: mengzonefire
  * @Date: 2021-08-25 08:34:46
- * @LastEditTime: 2021-09-06 22:01:07
+ * @LastEditTime: 2021-11-10 23:34:38
  * @LastEditors: mengzonefire
  * @Description: 定义全套的前台弹窗逻辑, 在Swal的回调函数内调用***Task类内定义的任务代码
  */
@@ -63,15 +63,13 @@ export default class Swalbase {
         GM_setValue("last_dir", path);
         if (!path) {
           // 路径留空
+          this.rapiduploadTask.isDefaultPath = true;
           let nowPath = location.href.match(/path=(.+?)(?:&|$)/);
-          if (nowPath) {
-            path = decodeURIComponent(nowPath[1]);
-            this.rapiduploadTask.isDefaultPath = true;
-          }
+          if (nowPath) path = decodeURIComponent(nowPath[1]);
+          else path = "/";
         }
-        if (path.charAt(path.length - 1) !== "/") path += "/"; // 补全路径结尾的 "/""
-        // debug
-        console.log(`秒传文件保存到: ${path}`);
+        if (path.charAt(path.length - 1) !== "/") path += "/"; // 补全路径结尾的 "/"
+        console.log(`秒传文件保存到: ${path}`); // debug
         this.rapiduploadTask.savePath = path;
         this.processView(false);
       }
@@ -313,13 +311,14 @@ export default class Swalbase {
       btn.textContent = "打开目录";
       btn.style.backgroundColor = "#ecae3c";
       btn.onclick = () => {
-        let path = location.href.match(/(path=.+?)(?:&|$)/);
-        if (path)
+        let path = location.href.match(/(path=(.+?))(?:&|$)/);
+        if (path && path[2] !== encodeURIComponent(_dir))
           location.href = location.href.replace(
             // 仅替换path参数, 不修改其他参数
             path[1],
             `path=${encodeURIComponent(_dir)}`
           );
+        else refreshList();
         Swal.close();
       };
       cBtn.before(btn);
